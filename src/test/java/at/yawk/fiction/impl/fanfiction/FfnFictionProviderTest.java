@@ -28,7 +28,7 @@ public class FfnFictionProviderTest {
     }
 
     @Test
-    public void test() throws Exception {
+    public void testSearch() throws Exception {
         FfnSearchQuery query = provider.createQuery();
         FfnSubCategory category = new FfnSubCategory();
         category.setCategory(FfnCategory.GAMES);
@@ -36,5 +36,10 @@ public class FfnFictionProviderTest {
         query.setCategory(category);
         Pageable<FfnStory> search = provider.search(query);
         ParseTest.print(search.getPage(0));
+    }
+
+    @Test
+    public void testSubCategories() throws Exception {
+        ParseTest.print(provider.fetchSubCategories(FfnCategory.GAMES));
     }
 }
