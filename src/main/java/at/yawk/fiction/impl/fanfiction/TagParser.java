@@ -5,6 +5,7 @@ import at.yawk.fiction.impl.PageParser;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.joda.time.Instant;
 import org.jsoup.nodes.Element;
@@ -24,11 +25,15 @@ class TagParser extends PageParser<FfnStory> {
         Elements timeElements = root.select("span");
         List<String> items = split(root.text(), " - ");
 
-        target.setGenres(Lists.transform(Arrays.asList(items.remove(2).split("/")), name -> {
-            FfnGenre genre = new FfnGenre();
-            genre.setName(name);
-            return genre;
-        }));
+        if (!items.get(2).startsWith("Chapters:")) {
+            target.setGenres(Lists.transform(Arrays.asList(items.remove(2).split("/")), name -> {
+                FfnGenre genre = new FfnGenre();
+                genre.setName(name);
+                return genre;
+            }));
+        } else {
+            target.setGenres(Collections.emptyList());
+        }
 
         target.setFavorites(parseIntLenient(removeMatch(items, "Favs: ([\\d,]+)")));
         target.setFollows(parseIntLenient(removeMatch(items, "Follows: ([\\d,]+)")));
@@ -39,7 +44,7 @@ class TagParser extends PageParser<FfnStory> {
         target.setUpdateTime(new Instant(Long.parseLong(timeElements.first().attr("data-xutime")) * 1000));
         target.setPublishTime(new Instant(Long.parseLong(timeElements.last().attr("data-xutime")) * 1000));
 
-        int chapterCount = Integer.parseInt(removeMatch(items, "Chapters: (\\d+)"));
+        int chapterCount = parseIntLenient(removeMatch(items, "Chapters: ([\\d,]+)"));
         List<Chapter> chapters = new ArrayList<>(chapterCount);
         for (int i = 0; i < chapterCount; i++) {
             FfnChapter chapter = new FfnChapter();

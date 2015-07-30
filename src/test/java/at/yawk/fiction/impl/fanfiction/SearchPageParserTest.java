@@ -10,6 +10,6 @@ public class SearchPageParserTest {
     @Test
     public void test() throws Exception {
         ParseTest.print(ParseTest.parse(SearchPageParser.class,
-                                        "https://www.fanfiction.net/game/Elder-Scroll-series/"));
+                                        "https://www.fanfiction.net/game/Elder-Scroll-series/?&srt=5&r=10&p=8"));
     }
 }
