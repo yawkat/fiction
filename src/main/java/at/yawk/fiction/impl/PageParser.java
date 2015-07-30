@@ -4,7 +4,6 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +26,12 @@ public abstract class PageParser<T> {
     PageParserProvider provider;
 
     public final T parse(HttpClient client, HttpUriRequest request) throws Exception {
+        T target = create();
+        parse(client, request, target);
+        return target;
+    }
+
+    public final void parse(HttpClient client, HttpUriRequest request, T target) throws Exception {
         HttpResponse response = client.execute(request);
         Header contentEncoding = response.getEntity().getContentEncoding();
         Charset charset = Charsets.UTF_8;
@@ -34,14 +39,8 @@ public abstract class PageParser<T> {
             charset = Charset.forName(contentEncoding.getValue());
         }
         try (InputStream in = response.getEntity().getContent()) {
-            return parse(in, charset, request.getURI());
+            parse(Jsoup.parse(in, charset.name(), request.getURI().toString()), target);
         }
-    }
-
-    public final T parse(InputStream input, Charset charset, URI baseUri) throws Exception {
-        T target = create();
-        parse(Jsoup.parse(input, charset.name(), baseUri.toString()), target);
-        return target;
     }
 
     protected abstract T create();

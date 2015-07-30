@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import org.jsoup.Jsoup;
 
 /**
  * @author yawkat
@@ -16,7 +17,11 @@ public class ParseTest {
 
     public static <T> T parse(Class<? extends PageParser<T>> parser, URI uri) throws Exception {
         try (InputStream in = uri.toURL().openStream()) {
-            return new PageParserProvider().getParser(parser).parse(in, StandardCharsets.UTF_8, uri);
+            T target = new PageParserProvider().getParser(parser).create();
+            new PageParserProvider().getParser(parser).parse(Jsoup.parse(in,
+                                                                         StandardCharsets.UTF_8.name(),
+                                                                         uri.toString()), target);
+            return target;
         }
     }
 

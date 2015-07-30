@@ -27,7 +27,7 @@ class ChapterPageParser extends PageParser<ChapterPageParser.StoryChapterPair> {
         target.story.setTitle(profileTop.select("> b.xcontrast_txt").text());
         // todo: author, tags
 
-        Elements chapterOptions = root.select("#chap_select option");
+        Elements chapterOptions = root.select("#chap_select").first().select("option");
         int chapterCount = chapterOptions.size();
         List<FfnChapter> chapters = (List<FfnChapter>) target.story.getChapters();
         if (chapters == null) {

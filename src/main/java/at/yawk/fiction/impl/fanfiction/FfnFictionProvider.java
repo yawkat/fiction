@@ -17,13 +17,23 @@ public class FfnFictionProvider implements FictionProvider {
     private final HttpClient httpClient;
 
     @Override
-    public void fetchStory(Story story) {
-        // todo
+    public void fetchStory(Story story) throws Exception {
+        Chapter chapter;
+        if (story.getChapters() != null && !story.getChapters().isEmpty()) {
+            chapter = story.getChapters().get(0);
+        } else {
+            chapter = new FfnChapter();
+            ((FfnChapter) chapter).setIndex(0);
+        }
+        fetchChapter(story, chapter);
     }
 
     @Override
-    public void fetchChapter(Story story, Chapter chapter) {
-        // todo
+    public void fetchChapter(Story story, Chapter chapter) throws Exception {
+        pageParserProvider.getParser(ChapterPageParser.class).parse(httpClient, new HttpGet(
+                "https://www.fanfiction.net/s/" + ((FfnStory) story).getId() + "/" +
+                (((FfnChapter) chapter).getIndex() + 1)
+        ), new ChapterPageParser.StoryChapterPair(story, chapter));
     }
 
     @Override
@@ -32,8 +42,12 @@ public class FfnFictionProvider implements FictionProvider {
     }
 
     public List<FfnSubCategory> fetchSubCategories(FfnCategory category) throws Exception {
-        return pageParserProvider.getParser(SubCategoryPageParser.class)
+        List<FfnSubCategory> subCategories = pageParserProvider.getParser(SubCategoryPageParser.class)
                 .parse(httpClient, new HttpGet("https://www.fanfiction.net/" + category.getId()));
+        for (FfnSubCategory subCategory : subCategories) {
+            subCategory.setCategory(category);
+        }
+        return subCategories;
     }
 
     @Override
