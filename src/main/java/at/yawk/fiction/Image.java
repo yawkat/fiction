@@ -1,5 +1,6 @@
 package at.yawk.fiction;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.net.URI;
 import lombok.Data;
 
@@ -7,6 +8,7 @@ import lombok.Data;
  * @author yawkat
  */
 @Data
+@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 public class Image {
     URI imageUrl;
     URI thumbnailUrl;
