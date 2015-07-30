@@ -22,7 +22,6 @@ public abstract class Story {
     URI uri;
     FormattedText description;
     List<? extends Chapter> chapters;
-    List<? extends Tag> tags;
     Author author;
     Instant publishTime;
     Instant updateTime;

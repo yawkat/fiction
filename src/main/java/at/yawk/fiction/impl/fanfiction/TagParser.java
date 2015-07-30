@@ -2,7 +2,9 @@ package at.yawk.fiction.impl.fanfiction;
 
 import at.yawk.fiction.Chapter;
 import at.yawk.fiction.impl.PageParser;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.joda.time.Instant;
 import org.jsoup.nodes.Element;
@@ -21,6 +23,13 @@ class TagParser extends PageParser<FfnStory> {
     protected void parse(Element root, FfnStory target) throws Exception {
         Elements timeElements = root.select("span");
         List<String> items = split(root.text(), " - ");
+
+        target.setGenres(Lists.transform(Arrays.asList(items.remove(2).split("/")), name -> {
+            FfnGenre genre = new FfnGenre();
+            genre.setName(name);
+            return genre;
+        }));
+
         removeMatch(items, "Updated: (.*)");
         removeMatch(items, "Published: (.*)");
         target.setUpdateTime(new Instant(Long.parseLong(timeElements.first().attr("data-xutime")) * 1000));

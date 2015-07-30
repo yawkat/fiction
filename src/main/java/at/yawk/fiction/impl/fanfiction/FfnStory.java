@@ -1,6 +1,7 @@
 package at.yawk.fiction.impl.fanfiction;
 
 import at.yawk.fiction.Story;
+import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -13,4 +14,5 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class FfnStory extends Story {
     int id;
+    List<FfnGenre> genres;
 }
