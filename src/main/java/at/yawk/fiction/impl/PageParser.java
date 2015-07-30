@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -74,5 +75,23 @@ public abstract class PageParser<T> {
 
     protected <P extends PageParser<?>> P getParser(Class<P> type) {
         return provider.getParser(type);
+    }
+
+    /**
+     * Parse the given integer string, ignoring invalid characters.
+     *
+     * @return the parsed integer or 0 if the input was <code>null</code>.
+     */
+    protected int parseIntLenient(@Nullable String s) {
+        int val = 0;
+        if (s != null) {
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (c >= '0' && c <= '9') {
+                    val = val * 10 + (c - '0');
+                }
+            }
+        }
+        return val;
     }
 }

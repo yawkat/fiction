@@ -15,4 +15,7 @@ import lombok.ToString;
 public class FfnStory extends Story {
     int id;
     List<FfnGenre> genres;
+    int favorites;
+    int follows;
+    int words;
 }

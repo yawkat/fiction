@@ -30,6 +30,10 @@ class TagParser extends PageParser<FfnStory> {
             return genre;
         }));
 
+        target.setFavorites(parseIntLenient(removeMatch(items, "Favs: (\\d+)")));
+        target.setFollows(parseIntLenient(removeMatch(items, "Follows: (\\d+)")));
+        target.setWords(parseIntLenient(removeMatch(items, "Words: (\\d+)")));
+
         removeMatch(items, "Updated: (.*)");
         removeMatch(items, "Published: (.*)");
         target.setUpdateTime(new Instant(Long.parseLong(timeElements.first().attr("data-xutime")) * 1000));
