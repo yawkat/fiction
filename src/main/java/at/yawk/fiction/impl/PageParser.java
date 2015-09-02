@@ -27,12 +27,6 @@ public abstract class PageParser<T> {
     PageParserProvider provider;
 
     public final T parse(HttpClient client, HttpUriRequest request) throws Exception {
-        T target = create();
-        parse(client, request, target);
-        return target;
-    }
-
-    public final void parse(HttpClient client, HttpUriRequest request, T target) throws Exception {
         HttpResponse response = client.execute(request);
         Header contentEncoding = response.getEntity().getContentEncoding();
         Charset charset = Charsets.UTF_8;
@@ -40,13 +34,11 @@ public abstract class PageParser<T> {
             charset = Charset.forName(contentEncoding.getValue());
         }
         try (InputStream in = response.getEntity().getContent()) {
-            parse(Jsoup.parse(in, charset.name(), request.getURI().toString()), target);
+            return parse(Jsoup.parse(in, charset.name(), request.getURI().toString()));
         }
     }
 
-    protected abstract T create();
-
-    protected abstract void parse(Element root, T target) throws Exception;
+    protected abstract T parse(Element root) throws Exception;
 
     protected String extractGroup(String haystack, @RegExp String regex) throws IOException {
         Matcher matcher = Pattern.compile(regex).matcher(haystack);
@@ -80,7 +72,7 @@ public abstract class PageParser<T> {
     /**
      * Parse the given integer string, ignoring invalid characters.
      *
-     * @return the parsed integer or 0 if the input was <code>null</code>.
+     * @return the parsed integer or 0 if the input was {@code null}.
      */
     protected int parseIntLenient(@Nullable String s) {
         int val = 0;

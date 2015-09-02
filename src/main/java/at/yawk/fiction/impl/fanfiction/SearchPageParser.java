@@ -1,8 +1,6 @@
 package at.yawk.fiction.impl.fanfiction;
 
-import at.yawk.fiction.Image;
-import at.yawk.fiction.Pageable;
-import at.yawk.fiction.RawText;
+import at.yawk.fiction.*;
 import at.yawk.fiction.impl.PageParser;
 import java.net.URI;
 import java.util.ArrayList;
@@ -13,41 +11,45 @@ import org.jsoup.select.Elements;
 /**
  * @author yawkat
  */
-class SearchPageParser extends PageParser<Pageable.Page<FfnStory>> {
+class SearchPageParser extends PageParser<Pageable.Page<Story>> {
     @Override
-    protected void parse(Element root, Pageable.Page<FfnStory> page) throws Exception {
-        List<FfnStory> stories = new ArrayList<>();
+    protected Pageable.Page<Story> parse(Element root) throws Exception {
+        List<Story> stories = new ArrayList<>();
 
         Elements storyContainers = root.select(".z-list");
         for (Element storyContainer : storyContainers) {
             Element stitle = storyContainer.select("a.stitle").first();
 
-            FfnStory story = new FfnStory();
-            story.setId(Integer.parseInt(extractGroup(stitle.attr("href"), "/s/(\\d+)/.*")));
-            story.setTitle(stitle.text());
-            story.setImage(new Image(new URI(stitle.select("img").attr("data-original"))));
-            story.setUri(new URI("https://fanfiction.net/s/" + story.getId() + "/1"));
+            Story.StoryBuilder storyBuilder = Story.builder();
+            FfnStoryMetadata.FfnStoryMetadataBuilder metadataBuilder = FfnStoryMetadata.builder();
+
+            int id = Integer.parseInt(extractGroup(stitle.attr("href"), "/s/(\\d+)/.*"));
+            metadataBuilder.id(id);
+
+            storyBuilder.title(stitle.text());
+            storyBuilder.image(new Image(new URI(stitle.select("img").attr("data-original")), null));
+            storyBuilder.uri(new URI("https://fanfiction.net/s/" + id + "/1"));
 
             for (Element link : storyContainers.select("> a")) {
                 String authorIdString = extractGroup(link.attr("href"), "/u/(\\d+)/.*");
                 if (authorIdString != null) {
-                    FfnAuthor author = new FfnAuthor();
-                    author.setId(Integer.parseInt(authorIdString));
-                    author.setName(link.text());
-                    story.setAuthor(author);
+                    storyBuilder.author(
+                            Author.builder()
+                                    .name(link.text())
+                                    .metadata(new FfnAuthorMetadata(Integer.parseInt(authorIdString)))
+                                    .build()
+                    );
                     break;
                 }
             }
 
             Element descriptionTag = storyContainer.select(".z-indent").first();
+            storyBuilder.description(new RawText(descriptionTag.ownText()));
 
-            RawText description = new RawText();
-            description.setText(descriptionTag.ownText());
-            story.setDescription(description);
+            getParser(TagParser.class).parse(descriptionTag.select(".xgray").first());
 
-            getParser(TagParser.class).parse(descriptionTag.select(".xgray").first(), story);
-
-            stories.add(story);
+            storyBuilder.metadata(metadataBuilder.build());
+            stories.add(storyBuilder.build());
         }
 
         page.setEntries(stories);

@@ -7,12 +7,16 @@
 package at.yawk.fiction.impl.fanfiction;
 
 import java.util.Collection;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.Wither;
 
 /**
  * @author yawkat
  */
-@Data
+@Value
+@Wither
+@Builder
 public class FfnSubCategory {
     FfnCategory category;
     boolean crossover;

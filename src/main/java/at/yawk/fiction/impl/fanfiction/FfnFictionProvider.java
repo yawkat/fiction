@@ -22,8 +22,8 @@ public class FfnFictionProvider implements FictionProvider {
         if (story.getChapters() != null && !story.getChapters().isEmpty()) {
             chapter = story.getChapters().get(0);
         } else {
-            chapter = new FfnChapter();
-            ((FfnChapter) chapter).setIndex(0);
+            chapter = new FfnChapterMetadata();
+            ((FfnChapterMetadata) chapter).setIndex(0);
         }
         fetchChapter(story, chapter);
     }
@@ -32,7 +32,7 @@ public class FfnFictionProvider implements FictionProvider {
     public void fetchChapter(Story story, Chapter chapter) throws Exception {
         pageParserProvider.getParser(ChapterPageParser.class).parse(httpClient, new HttpGet(
                 "https://www.fanfiction.net/s/" + ((FfnStory) story).getId() + "/" +
-                (((FfnChapter) chapter).getIndex() + 1)
+                (((FfnChapterMetadata) chapter).getIndex() + 1)
         ), new ChapterPageParser.StoryChapterPair(story, chapter));
     }
 

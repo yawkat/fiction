@@ -1,13 +1,17 @@
 package at.yawk.fiction;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.Data;
+import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.Wither;
 
 /**
  * @author yawkat
  */
-@Data
+@Value
+@Wither
+@Builder
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 public class RawText implements FormattedText {
-    private String text;
+    private final String text;
 }

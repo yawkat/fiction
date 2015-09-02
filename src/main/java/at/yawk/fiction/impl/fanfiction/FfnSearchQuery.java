@@ -7,17 +7,17 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.Wither;
 
 /**
  * @author yawkat
  */
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class FfnSearchQuery extends SearchQuery {
+@Value
+@Wither
+@Builder
+public class FfnSearchQuery implements SearchQuery {
     FfnSubCategory category;
 
     FfnSearchOrder order = FfnSearchOrder.UPDATE_DATE;

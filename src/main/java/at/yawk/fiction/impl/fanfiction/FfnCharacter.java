@@ -6,12 +6,12 @@
 
 package at.yawk.fiction.impl.fanfiction;
 
-import lombok.Data;
+import lombok.Value;
 
 /**
  * @author yawkat
  */
-@Data
+@Value
 public class FfnCharacter {
     private int id;
     private String name;

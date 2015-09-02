@@ -2,6 +2,7 @@ package at.yawk.fiction;
 
 import java.util.List;
 import lombok.Data;
+import lombok.Value;
 
 /**
  * @author yawkat
@@ -12,17 +13,17 @@ public interface Pageable<T> {
      */
     Page<T> getPage(int i) throws Exception;
 
-    @Data
+    @Value
     final class Page<T> {
         List<T> entries;
         /**
          * The expected total page count or <code>-1</code> if unknown.
          */
-        int pageCount = -1;
+        int pageCount;
         /**
          * <code>true</code> if this is the last page, <code>false</code> if there are more following pages or
          * we don't know.
          */
-        boolean last = false;
+        boolean last;
     }
 }

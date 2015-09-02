@@ -1,6 +1,7 @@
 package at.yawk.fiction.impl.fanfiction;
 
 import at.yawk.fiction.Chapter;
+import at.yawk.fiction.Story;
 import at.yawk.fiction.impl.PageParser;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
@@ -14,14 +15,9 @@ import org.jsoup.select.Elements;
 /**
  * @author yawkat
  */
-class TagParser extends PageParser<FfnStory> {
+class TagParser extends PageParser<Story> {
     @Override
-    protected FfnStory create() {
-        return new FfnStory();
-    }
-
-    @Override
-    protected void parse(Element root, FfnStory target) throws Exception {
+    protected Story parse(Element root) throws Exception {
         Elements timeElements = root.select("span");
         List<String> items = split(root.text(), " - ");
 
@@ -47,7 +43,7 @@ class TagParser extends PageParser<FfnStory> {
         int chapterCount = parseIntLenient(removeMatch(items, "Chapters: ([\\d,]+)"));
         List<Chapter> chapters = new ArrayList<>(chapterCount);
         for (int i = 0; i < chapterCount; i++) {
-            FfnChapter chapter = new FfnChapter();
+            FfnChapterMetadata chapter = new FfnChapterMetadata();
             chapter.setIndex(i);
             chapters.add(chapter);
         }

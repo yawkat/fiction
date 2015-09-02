@@ -1,26 +1,18 @@
 package at.yawk.fiction;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.net.URI;
-import lombok.Data;
+import javax.annotation.Nullable;
+import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.Wither;
 
 /**
  * @author yawkat
  */
-@Data
-@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
+@Value
+@Wither
+@Builder
 public class Image {
-    URI imageUrl;
-    URI thumbnailUrl;
-
-    public Image() {}
-
-    public Image(URI imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public Image(URI imageUrl, URI thumbnailUrl) {
-        this.imageUrl = imageUrl;
-        this.thumbnailUrl = thumbnailUrl;
-    }
+    @Nullable URI imageUrl;
+    @Nullable URI thumbnailUrl;
 }
