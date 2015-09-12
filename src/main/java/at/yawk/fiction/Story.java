@@ -1,6 +1,7 @@
 package at.yawk.fiction;
 
 import at.yawk.fiction.impl.fanfiction.FfnStory;
+import at.yawk.fiction.impl.fimfiction.FimStory;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.net.URI;
@@ -14,7 +15,8 @@ import org.joda.time.Instant;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 @JsonSubTypes({
-        @JsonSubTypes.Type(FfnStory.class)
+        @JsonSubTypes.Type(FfnStory.class),
+        @JsonSubTypes.Type(FimStory.class),
 })
 public abstract class Story {
     String title;

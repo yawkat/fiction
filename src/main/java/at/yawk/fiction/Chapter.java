@@ -1,6 +1,7 @@
 package at.yawk.fiction;
 
 import at.yawk.fiction.impl.fanfiction.FfnChapter;
+import at.yawk.fiction.impl.fimfiction.FimChapter;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
@@ -11,7 +12,8 @@ import lombok.Data;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 @JsonSubTypes({
-        @JsonSubTypes.Type(FfnChapter.class)
+        @JsonSubTypes.Type(FfnChapter.class),
+        @JsonSubTypes.Type(FimChapter.class),
 })
 public abstract class Chapter {
     String name;
