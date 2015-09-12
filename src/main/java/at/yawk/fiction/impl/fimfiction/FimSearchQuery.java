@@ -26,6 +26,7 @@ public class FimSearchQuery extends SearchQuery {
     @Nullable private Integer minWords;
     @Nullable private Integer maxWords;
     @Nullable private FimShelf shelf;
+    @Nullable private Boolean unread;
 
     @SneakyThrows(UnsupportedEncodingException.class)
     URI build(int page) {
@@ -94,6 +95,10 @@ public class FimSearchQuery extends SearchQuery {
             for (FimTag excludedTag : excludedTags) {
                 uriBuilder.append("tags[]=-").append(URLEncoder.encode(excludedTag.getId(), "UTF-8")).append('&');
             }
+        }
+
+        if (unread != null) {
+            uriBuilder.append("unread=").append(unread ? '1' : '0').append('&');
         }
 
         uriBuilder.append("page=").append(page + 1);
