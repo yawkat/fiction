@@ -4,17 +4,21 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.intellij.lang.annotations.RegExp;
 import org.jsoup.Jsoup;
@@ -27,21 +31,11 @@ public abstract class PageParser<T> {
     PageParserProvider provider;
 
     public final T parse(HttpClient client, HttpUriRequest request) throws Exception {
-        T target = create();
-        parse(client, request, target);
-        return target;
+        return request(client).request(request).send();
     }
 
     public final void parse(HttpClient client, HttpUriRequest request, T target) throws Exception {
-        HttpResponse response = client.execute(request);
-        Header contentEncoding = response.getEntity().getContentEncoding();
-        Charset charset = Charsets.UTF_8;
-        if (contentEncoding != null) {
-            charset = Charset.forName(contentEncoding.getValue());
-        }
-        try (InputStream in = response.getEntity().getContent()) {
-            parse(Jsoup.parse(in, charset.name(), request.getURI().toString()), target);
-        }
+        request(client).request(request).target(target).send();
     }
 
     protected abstract T create();
@@ -93,5 +87,84 @@ public abstract class PageParser<T> {
             }
         }
         return val;
+    }
+
+    // REQUEST API
+
+    public final RequestBuilder request(HttpClient client) {
+        return new RequestBuilder(client);
+    }
+
+    @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+    public class RequestBuilder {
+        private final HttpClient client;
+        private HttpUriRequest request;
+        private T value;
+        private Element root;
+
+        public RequestBuilder request(HttpUriRequest request) {
+            this.request = request;
+            return this;
+        }
+
+        public RequestBuilder get(URI uri) {
+            return request(new HttpGet(uri));
+        }
+
+        public RequestBuilder get(String uri) {
+            return request(new HttpGet(uri));
+        }
+
+        public RequestBuilder cookies(String key, String value) {
+            return cookies(Collections.singletonList(key), Collections.singletonList(value));
+        }
+
+        public RequestBuilder cookies(String key1, String value1, String key2, String value2) {
+            return cookies(Arrays.asList(key1, key2), Arrays.asList(value1, value2));
+        }
+
+        @SneakyThrows(UnsupportedEncodingException.class)
+        public RequestBuilder cookies(List<String> keys, List<String> values) {
+            assert keys.size() == values.size();
+            StringBuilder cookieString = new StringBuilder();
+            for (int i = 0; i < keys.size(); i++) {
+                String key = keys.get(i);
+                String value = values.get(i);
+                if (i != 0) { cookieString.append(';'); }
+                cookieString.append(URLEncoder.encode(key, "UTF-8"))
+                        .append('=')
+                        .append(URLEncoder.encode(value, "UTF-8"));
+            }
+            return header("Cookie", cookieString.toString());
+        }
+
+        public RequestBuilder header(String key, String value) {
+            request.addHeader(key, value);
+            return this;
+        }
+
+        public RequestBuilder target(T value) {
+            this.value = value;
+            return this;
+        }
+
+        private void requestRoot() throws IOException {
+            HttpResponse response = client.execute(request);
+            Header contentEncoding = response.getEntity().getContentEncoding();
+            Charset charset = Charsets.UTF_8;
+            if (contentEncoding != null) {
+                charset = Charset.forName(contentEncoding.getValue());
+            }
+            try (InputStream in = response.getEntity().getContent()) {
+                root = Jsoup.parse(in, charset.name(), request.getURI().toString());
+            }
+        }
+
+        public T send() throws Exception {
+            if (root == null) { requestRoot(); }
+            if (value == null) { value = create(); }
+            parse(root, value);
+            return value;
+        }
     }
 }

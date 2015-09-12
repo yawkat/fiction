@@ -30,10 +30,10 @@ public class FfnFictionProvider implements FictionProvider {
 
     @Override
     public void fetchChapter(Story story, Chapter chapter) throws Exception {
-        pageParserProvider.getParser(ChapterPageParser.class).parse(httpClient, new HttpGet(
-                "https://www.fanfiction.net/s/" + ((FfnStory) story).getId() + "/" +
-                (((FfnChapter) chapter).getIndex() + 1)
-        ), new ChapterPageParser.StoryChapterPair(story, chapter));
+        pageParserProvider.getParser(ChapterPageParser.class).request(httpClient)
+                .get("https://www.fanfiction.net/s/" + ((FfnStory) story).getId() + '/' +
+                     (((FfnChapter) chapter).getIndex() + 1))
+                .target(new ChapterPageParser.StoryChapterPair(story, chapter));
     }
 
     @Override
@@ -57,7 +57,7 @@ public class FfnFictionProvider implements FictionProvider {
         return page -> {
             URI uri = ffnSearchQuery.build(page);
             Pageable.Page<FfnStory> o = pageParserProvider.getParser(SearchPageParser.class)
-                    .parse(httpClient, new HttpGet(uri));
+                    .request(httpClient).get(uri).send();
             o.setLast(o.getPageCount() <= page - 1);
             return o;
         };

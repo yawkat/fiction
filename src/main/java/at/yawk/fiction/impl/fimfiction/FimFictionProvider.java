@@ -1,16 +1,13 @@
 package at.yawk.fiction.impl.fimfiction;
 
 import at.yawk.fiction.*;
+import at.yawk.fiction.impl.PageParser;
 import at.yawk.fiction.impl.PageParserProvider;
-import java.net.URI;
-import java.net.URLEncoder;
 import java.util.List;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 
 /**
  * @author yawkat
@@ -24,26 +21,30 @@ public class FimFictionProvider implements FictionProvider {
     private String sessionToken;
 
     public List<FimTag> fetchTags() throws Exception {
-        HttpGet request = new HttpGet(URI.create("https://www.fimfiction.net/stories"));
+        PageParser.RequestBuilder request = pageParserProvider.getParser(TagsParser.class).request(httpClient)
+                .get("https://www.fimfiction.net/stories");
         decorateRequest(request);
-        return pageParserProvider.getParser(TagsParser.class).parse(httpClient, request);
+        return request
+                .send();
     }
 
     @Override
     public void fetchStory(Story story) throws Exception {
-        HttpGet request = new HttpGet(URI.create("https://www.fimfiction.net/story/" + ((FimStory) story).getId()));
+        PageParser.RequestBuilder request = pageParserProvider.getParser(StoryParser.class).request(httpClient)
+                .get("https://www.fimfiction.net/story/" + ((FimStory) story).getId())
+                .target((FimStory) story);
         decorateRequest(request);
-        pageParserProvider.getParser(StoryParser.class).parse(httpClient, request, (FimStory) story);
+        request.send();
     }
 
     @Override
     public void fetchChapter(Story story, Chapter chapter) throws Exception {
-        HttpGet request = new HttpGet(URI.create(
-                "https://www.fimfiction.net/story/" + ((FimStory) story).getId() + '/' +
-                (((FimChapter) chapter).getIndex() + 1)
-        ));
+        PageParser.RequestBuilder request = pageParserProvider.getParser(ChapterParser.class).request(httpClient)
+                .get("https://www.fimfiction.net/story/" + ((FimStory) story).getId() + '/' +
+                     (((FimChapter) chapter).getIndex() + 1))
+                .target((FimChapter) chapter);
         decorateRequest(request);
-        pageParserProvider.getParser(ChapterParser.class).parse(httpClient, request, (FimChapter) chapter);
+        request.send();
     }
 
     @Override
@@ -55,16 +56,18 @@ public class FimFictionProvider implements FictionProvider {
     public Pageable<FimStory> search(SearchQuery query) {
         FimSearchQuery fim = (FimSearchQuery) query;
         return page -> {
-            HttpGet request = new HttpGet(fim.build(page));
+            PageParser<Pageable.Page<FimStory>>.RequestBuilder request =
+                    pageParserProvider.getParser(SearchPageParser.class).request(httpClient)
+                    .get(fim.build(page));
             decorateRequest(request);
-            Pageable.Page<FimStory> p = pageParserProvider.getParser(SearchPageParser.class).parse(httpClient, request);
+            Pageable.Page<FimStory> p = request.send();
             p.setLast(p.getEntries().isEmpty());
             return p;
         };
     }
 
-    private void decorateRequest(HttpUriRequest request) throws Exception {
-        request.addHeader("Cookie", "view_mature=true; session_token=" + URLEncoder.encode(
-                sessionToken == null ? "" : sessionToken, "UTF-8"));
+    private void decorateRequest(PageParser.RequestBuilder request) throws Exception {
+        request.cookies("view_mature", "true",
+                        "session_token", sessionToken == null ? "" : sessionToken);
     }
 }
