@@ -4,6 +4,7 @@ import at.yawk.fiction.HtmlText;
 import at.yawk.fiction.Image;
 import at.yawk.fiction.impl.PageParser;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.jsoup.nodes.Element;
@@ -58,6 +59,26 @@ class StoryParser extends PageParser<FimStory> {
             html.setHtml(descriptionHtml.toString());
             target.setDescription(html);
         }
+
+        List<FimTag> tags = new ArrayList<>();
+
+        for (Element categoryElement : descriptionElement.select("> .story_category")) {
+            FimTag tag = new FimTag();
+            tag.setId(extractGroup(categoryElement.attr("href"), ".*tags\\[\\]=(.+)"));
+            tag.setName(categoryElement.text());
+            tag.setIcon(null);
+            tags.add(tag);
+        }
+
+        for (Element characterIcon : root.select(".extra_story_data .inner_data").first().select("> .character_icon")) {
+            FimTag tag = new FimTag();
+            // we can't find out id here :(
+            tag.setName(characterIcon.attr("title"));
+            tag.setIcon(new URL(characterIcon.select("img").first().absUrl("src")));
+            tags.add(tag);
+        }
+
+        target.setTags(tags);
 
         List<FimChapter> chapters = new ArrayList<>();
         for (Element chapterContainer : storyContainer.select(".chapters .chapter_container")) {
