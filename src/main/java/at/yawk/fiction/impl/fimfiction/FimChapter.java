@@ -12,6 +12,7 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class FimChapter extends Chapter {
+    private int id;
     private int index;
     private int wordCount;
 }

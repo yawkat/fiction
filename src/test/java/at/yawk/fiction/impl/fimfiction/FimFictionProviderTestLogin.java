@@ -59,4 +59,18 @@ public class FimFictionProviderTestLogin {
                 .findAny().get();
         assertNotEquals(favorites.getId(), 0);
     }
+
+    @Test
+    public void testToggleRead() throws Exception {
+        FimStory story = new FimStory();
+        story.setId(55373);
+        provider.fetchStory(story);
+
+        FimChapter chapter = (FimChapter) story.getChapters().get(109);
+        boolean oldRead = chapter.getRead();
+        provider.toggleRead(chapter);
+        assertNotEquals(chapter.getRead(), oldRead);
+        provider.toggleRead(chapter);
+        assertEquals(chapter.getRead().booleanValue(), oldRead);
+    }
 }

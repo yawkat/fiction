@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +80,17 @@ public class FimFictionProvider implements FictionProvider {
                 .get("https://www.fimfiction.net/");
         decorateHtmlRequest(request);
         return request.send();
+    }
+
+    public void toggleRead(Chapter chapter) throws Exception {
+        HttpPost request = new HttpPost("https://www.fimfiction.net/ajax/toggle_read.php");
+        request.setEntity(new UrlEncodedFormEntity(Collections.singletonList(
+                new BasicNameValuePair("chapter", String.valueOf(((FimChapter) chapter).getId()))
+        )));
+
+        HttpResponse response = httpClient.execute(request);
+        JsonNode responseNode = objectMapper.readTree(EntityUtils.toByteArray(response.getEntity()));
+        chapter.setRead(responseNode.get("read").asBoolean());
     }
 
     @Override
