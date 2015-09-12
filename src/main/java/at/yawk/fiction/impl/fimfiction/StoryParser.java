@@ -90,7 +90,7 @@ class StoryParser extends PageParser<FimStory> {
             chapter.setId(parseIntLenient(extractGroup(
                     chapterContainer.select(".download_container a").first().attr("href"), ".*chapter=(\\d+)")));
             chapter.setIndex(parseIntLenient(extractGroup(
-                    chapterLink.attr("href"), ".*/story/\\d+/(\\d+)(:?/.*)?")));
+                    chapterLink.attr("href"), ".*/story/\\d+/(\\d+)(:?/.*)?")) - 1);
             chapter.setName(chapterLink.text());
             chapter.setWordCount(parseIntLenient(chapterContainer.select(".word_count").first().ownText()));
 

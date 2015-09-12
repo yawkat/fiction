@@ -15,11 +15,9 @@ class ChapterParser extends PageParser<FimChapter> {
 
     @Override
     protected void parse(Element root, FimChapter target) throws Exception {
-        Element format = root.select("#chapter_format").first();
-
-        target.setName(format.select("#chapter_title").text());
+        target.setName(root.select("h3").first().text());
         HtmlText html = new HtmlText();
-        html.setHtml(root.select(".story_container").first().html());
+        html.setHtml(root.select("body").first().html());
         target.setText(html);
     }
 }

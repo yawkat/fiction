@@ -104,12 +104,9 @@ public class FimFictionProvider implements FictionProvider {
 
     @Override
     public void fetchChapter(Story story, Chapter chapter) throws Exception {
-        PageParser.RequestBuilder request = pageParserProvider.getParser(ChapterParser.class).request(httpClient)
-                .get("https://www.fimfiction.net/story/" + ((FimStory) story).getId() + '/' +
-                     (((FimChapter) chapter).getIndex() + 1))
-                .target((FimChapter) chapter);
-        decorateHtmlRequest(request);
-        request.send();
+        pageParserProvider.getParser(ChapterParser.class).request(httpClient)
+                .get("http://www.fimfiction.net/download_chapter.php?html&chapter=" + ((FimChapter) chapter).getId())
+                .target((FimChapter) chapter).send();
     }
 
     @Override
