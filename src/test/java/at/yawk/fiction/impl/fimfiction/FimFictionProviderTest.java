@@ -46,8 +46,6 @@ public class FimFictionProviderTest {
         chapter.setIndex(0);
 
         provider.fetchChapter(story, chapter);
-
-        assertEquals(chapter.getName(), "1. Awakening");
     }
 
     @Test
