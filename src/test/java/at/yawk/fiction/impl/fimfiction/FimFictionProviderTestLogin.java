@@ -2,6 +2,7 @@ package at.yawk.fiction.impl.fimfiction;
 
 import at.yawk.fiction.impl.PageParserProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.SkipException;
@@ -10,6 +11,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotEquals;
 
 /**
  * @author yawkat
@@ -47,5 +49,14 @@ public class FimFictionProviderTestLogin {
 
         assertEquals(story.getChapters().get(0).getRead(), Boolean.TRUE);
         assertEquals(story.getChapters().get(120).getRead(), Boolean.FALSE);
+    }
+
+    @Test
+    public void testFetchShelves() throws Exception {
+        List<FimShelf> shelves = provider.fetchShelves();
+        FimShelf favorites = shelves.stream()
+                .filter(s -> s.getName().equals("Favourites"))
+                .findAny().get();
+        assertNotEquals(favorites.getId(), 0);
     }
 }

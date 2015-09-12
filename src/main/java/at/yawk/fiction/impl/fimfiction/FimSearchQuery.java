@@ -25,10 +25,17 @@ public class FimSearchQuery extends SearchQuery {
     @Nullable private FimStatus status;
     @Nullable private Integer minWords;
     @Nullable private Integer maxWords;
+    @Nullable private FimShelf shelf;
 
     @SneakyThrows(UnsupportedEncodingException.class)
     URI build(int page) {
-        StringBuilder uriBuilder = new StringBuilder("https://www.fimfiction.net/stories?");
+        StringBuilder uriBuilder = new StringBuilder("https://www.fimfiction.net/");
+
+        if (shelf == null) {
+            uriBuilder.append("stories?");
+        } else {
+            uriBuilder.append("bookshelf/").append(shelf.getId()).append('?');
+        }
 
         if (order != null) {
             uriBuilder.append("order=");

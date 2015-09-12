@@ -70,6 +70,17 @@ public class FimFictionProvider implements FictionProvider {
         return request.send();
     }
 
+    /**
+     * Get a list of all shelves of this user. Return value is undefined if the user isn't logged in.
+     */
+    public List<FimShelf> fetchShelves() throws Exception {
+        PageParser<List<FimShelf>>.RequestBuilder request = pageParserProvider.getParser(ShelvesParser.class)
+                .request(httpClient)
+                .get("https://www.fimfiction.net/");
+        decorateHtmlRequest(request);
+        return request.send();
+    }
+
     @Override
     public void fetchStory(Story story) throws Exception {
         PageParser.RequestBuilder request = pageParserProvider.getParser(StoryParser.class).request(httpClient)
