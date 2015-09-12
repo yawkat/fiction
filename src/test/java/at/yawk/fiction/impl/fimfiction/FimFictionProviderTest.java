@@ -1,6 +1,7 @@
 package at.yawk.fiction.impl.fimfiction;
 
 import at.yawk.fiction.impl.PageParserProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -21,7 +22,7 @@ public class FimFictionProviderTest {
     @BeforeMethod
     public void setUp() throws Exception {
         client = HttpClientBuilder.create().build();
-        provider = new FimFictionProvider(new PageParserProvider(), client);
+        provider = new FimFictionProvider(new PageParserProvider(), client, new ObjectMapper());
     }
 
     @AfterMethod

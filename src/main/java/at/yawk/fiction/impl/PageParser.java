@@ -101,6 +101,7 @@ public abstract class PageParser<T> {
         private HttpUriRequest request;
         private T value;
         private Element root;
+        private DocumentValidator validator = (builder, root) -> true;
 
         public RequestBuilder request(HttpUriRequest request) {
             this.request = request;
@@ -148,7 +149,12 @@ public abstract class PageParser<T> {
             return this;
         }
 
-        private void requestRoot() throws IOException {
+        public RequestBuilder validator(DocumentValidator validator) {
+            this.validator = validator;
+            return this;
+        }
+
+        private void requestRootOnce() throws IOException {
             HttpResponse response = client.execute(request);
             Header contentEncoding = response.getEntity().getContentEncoding();
             Charset charset = Charsets.UTF_8;
@@ -161,10 +167,24 @@ public abstract class PageParser<T> {
         }
 
         public T send() throws Exception {
-            if (root == null) { requestRoot(); }
+            if (root == null) {
+                do {
+                    requestRootOnce();
+                } while (validator != null && !validator.validate(this, root));
+            }
             if (value == null) { value = create(); }
             parse(root, value);
             return value;
         }
+    }
+
+    public interface DocumentValidator {
+        /**
+         * Validate the given document root.
+         *
+         * @return {@code true} if the document is valid, {@code false} if it should be refetched.
+         * @throws Exception If the request should be aborted.
+         */
+        boolean validate(PageParser.RequestBuilder requestBuilder, Element root) throws Exception;
     }
 }

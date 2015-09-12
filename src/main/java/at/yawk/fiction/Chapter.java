@@ -16,4 +16,9 @@ import lombok.Data;
 public abstract class Chapter {
     String name;
     FormattedText text;
+    /**
+     * Whether this chapter is read according to account data of this user. {@code null} means unknown or not logged
+     * in.
+     */
+    Boolean read;
 }

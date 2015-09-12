@@ -70,6 +70,14 @@ class StoryParser extends PageParser<FimStory> {
                                                           ".*/story/\\d+/(\\d+)(:?/.*)?")));
             chapter.setName(chapterLink.text());
             chapter.setWordCount(parseIntLenient(chapterContainer.select(".word_count").first().ownText()));
+
+            Element chapterReadIcon = chapterContainer.select(".chapter-read-icon").first();
+            if (chapterReadIcon != null) {
+                chapter.setRead(chapterReadIcon.hasClass("chapter-read"));
+            } else {
+                chapter.setRead(null);
+            }
+
             chapters.add(chapter);
         }
         target.setChapters(chapters);
