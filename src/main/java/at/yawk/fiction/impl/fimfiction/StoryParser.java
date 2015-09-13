@@ -105,7 +105,6 @@ class StoryParser extends PageParser<FimStory> {
         }
         target.setChapters(chapters);
 
-        // todo: parse tags + characters
         // todo: parse first published + last modified
     }
 }

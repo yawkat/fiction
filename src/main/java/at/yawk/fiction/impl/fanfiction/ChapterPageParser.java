@@ -58,7 +58,7 @@ class ChapterPageParser extends PageParser<ChapterPageParser.StoryChapterPair> {
             }
 
             chapter.setIndex(i);
-            if (select != null) {
+            if (chapterOptions != null) {
                 String name = chapterOptions.get(i).text();
                 chapter.setName(name.substring(name.indexOf(' ') + 1)); // remove leading enumeration
             }

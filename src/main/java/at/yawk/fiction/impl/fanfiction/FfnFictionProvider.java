@@ -33,7 +33,8 @@ public class FfnFictionProvider implements FictionProvider {
         pageParserProvider.getParser(ChapterPageParser.class).request(httpClient)
                 .get("https://www.fanfiction.net/s/" + ((FfnStory) story).getId() + '/' +
                      (((FfnChapter) chapter).getIndex() + 1))
-                .target(new ChapterPageParser.StoryChapterPair(story, chapter));
+                .target(new ChapterPageParser.StoryChapterPair(story, chapter))
+                .send();
     }
 
     @Override
