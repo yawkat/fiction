@@ -15,4 +15,5 @@ import lombok.ToString;
 public class FimStory extends Story {
     private int id;
     private List<FimTag> tags;
+    private FimStatus status;
 }

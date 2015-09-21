@@ -80,6 +80,22 @@ class StoryParser extends PageParser<FimStory> {
 
         target.setTags(tags);
 
+        Element statusElement = storyContainer.select(".chapters .bottom > span").first();
+        switch (statusElement.attr("title")) {
+        case "Complete":
+            target.setStatus(FimStatus.COMPLETED);
+            break;
+        case "Incomplete":
+            target.setStatus(FimStatus.INCOMPLETE);
+            break;
+        case "On Hiatus":
+            target.setStatus(FimStatus.ON_HIATUS);
+            break;
+        case "Cancelled":
+            target.setStatus(FimStatus.CANCELLED);
+            break;
+        }
+
         List<FimChapter> chapters = new ArrayList<>();
         for (Element chapterContainer : storyContainer.select(".chapters .chapter_container")) {
             if (chapterContainer.hasClass("chapter_expander")) { continue; }
