@@ -25,7 +25,10 @@ class SearchPageParser extends PageParser<Pageable.Page<FfnStory>> {
             FfnStory story = new FfnStory();
             story.setId(Integer.parseInt(extractGroup(stitle.attr("href"), "/s/(\\d+)/.*")));
             story.setTitle(stitle.text());
-            story.setImage(new Image(new URI(stitle.select("img").attr("data-original"))));
+            Element image = stitle.select("img").first();
+            if (image.hasAttr("data-original")) {
+                story.setImage(new Image(new URI(image.absUrl("data-original"))));
+            }
             story.setUri(new URI("https://fanfiction.net/s/" + story.getId() + "/1"));
 
             for (Element link : storyContainer.select("> a")) {
