@@ -43,6 +43,7 @@ public class FimFictionProviderTest {
         FimStory story = new FimStory();
         story.setId(55373);
         FimChapter chapter = new FimChapter();
+        chapter.setId(839155);
         chapter.setIndex(0);
 
         provider.fetchChapter(story, chapter);
