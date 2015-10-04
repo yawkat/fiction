@@ -1,7 +1,9 @@
 package at.yawk.fiction.impl.fimfiction;
 
+import at.yawk.fiction.Image;
 import at.yawk.fiction.impl.PageParserProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.util.Collections;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -58,6 +60,8 @@ public class FimFictionProviderTest {
 
         assertEquals(story.getTitle(), "Rebirth of the Damned");
         assertEquals(story.getAuthor().getName(), "Borsuq");
+        assertEquals(story.getImage(), new Image(URI.create(
+                "https://cdn-img.fimfiction.net/story/ihgz-1432450586-55373-medium"), null));
     }
 
     @Test

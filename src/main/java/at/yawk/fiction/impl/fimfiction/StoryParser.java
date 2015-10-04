@@ -39,11 +39,15 @@ class StoryParser extends PageParser<FimStory> {
         target.setAuthor(author);
 
         Element descriptionElement = storyContainer.select(".description").first();
-        Element storyImage = descriptionElement.select(".story_image").first();
+        Element storyImage = descriptionElement.select(".story_image img").first();
         if (storyImage != null) {
             Image image = new Image();
-            image.setImageUrl(URI.create(storyImage.absUrl("data-src")));
-            image.setThumbnailUrl(URI.create(storyImage.absUrl("src")));
+            if (storyImage.hasAttr("data-src")) {
+                image.setImageUrl(URI.create(storyImage.absUrl("data-src")));
+            }
+            if (storyImage.hasAttr("src")) {
+                image.setThumbnailUrl(URI.create(storyImage.absUrl("src")));
+            }
             target.setImage(image);
         }
 
