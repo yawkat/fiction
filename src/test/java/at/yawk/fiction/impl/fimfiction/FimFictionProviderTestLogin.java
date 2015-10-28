@@ -88,6 +88,24 @@ public class FimFictionProviderTestLogin {
         ));
     }
 
+    @Test
+    public void testSetStoryShelf() throws Exception {
+        FimShelf shelf = createShelf(321007, "Read It Later");
+        FimStory story = new FimStory();
+        story.setId(55373);
+
+        boolean initialState = provider.fetchStoryShelves(story).get(shelf);
+        // flip the state
+        provider.setStoryShelf(story, shelf, !initialState);
+        assertEquals((boolean) provider.fetchStoryShelves(story).get(shelf), !initialState);
+        // this should do nothing
+        provider.setStoryShelf(story, shelf, !initialState);
+        assertEquals((boolean) provider.fetchStoryShelves(story).get(shelf), !initialState);
+        // ... and flip it back again
+        provider.setStoryShelf(story, shelf, initialState);
+        assertEquals((boolean) provider.fetchStoryShelves(story).get(shelf), initialState);
+    }
+
     private static FimShelf createShelf(int id, String name) {
         FimShelf shelf = new FimShelf();
         shelf.setId(id);

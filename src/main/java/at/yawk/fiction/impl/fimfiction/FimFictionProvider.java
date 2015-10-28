@@ -86,6 +86,10 @@ public class FimFictionProvider implements FictionProvider {
         return request.send();
     }
 
+    /**
+     * Toggle this chapters read status and set {@link Chapter#read} to the new value. <i>This does not make use of the
+     * old {@link Chapter#read} value, if it is out of date this action may yield unwanted results!</i>
+     */
     public void toggleRead(Chapter chapter) throws Exception {
         HttpPost request = new HttpPost("https://www.fimfiction.net/ajax/toggle_read.php");
         request.setEntity(new UrlEncodedFormEntity(Collections.singletonList(
@@ -133,6 +137,24 @@ public class FimFictionProvider implements FictionProvider {
         Map<FimShelf, Boolean> result = parser.create();
         parser.parse(Jsoup.parse(contentHtml, uri), result);
         return result;
+    }
+
+    /**
+     * Add or remove a story from a shelf.
+     *
+     * @param add whether this story should be in the shelf after this call.
+     */
+    public void setStoryShelf(Story story, FimShelf shelf, boolean add) throws Exception {
+        HttpPost request = new HttpPost("https://www.fimfiction.net/ajax/bookshelf_items/post.php");
+        request.setEntity(new UrlEncodedFormEntity(Arrays.asList(
+                new BasicNameValuePair("bookshelf", String.valueOf(shelf.getId())),
+                new BasicNameValuePair("story", String.valueOf(((FimStory) story).getId())),
+                new BasicNameValuePair("task", add ? "add" : "remove")
+        )));
+        // we just assume this works
+        //noinspection resource
+        httpClient.execute(request)
+                .getEntity().getContent().close();
     }
 
     @Override
