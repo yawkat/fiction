@@ -1,7 +1,7 @@
 package at.yawk.fiction.impl.fimfiction;
 
 import at.yawk.fiction.impl.PageParser;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.jsoup.nodes.Element;
 
@@ -11,7 +11,7 @@ import org.jsoup.nodes.Element;
 class StoryShelfParser extends PageParser<Map<FimShelf,Boolean>> {
     @Override
     protected Map<FimShelf, Boolean> create() {
-        return new HashMap<>();
+        return new LinkedHashMap<>();
     }
 
     @Override
