@@ -6,18 +6,22 @@ import at.yawk.fiction.impl.PageParserProvider;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
 
 /**
  * @author yawkat
@@ -107,6 +111,28 @@ public class FimFictionProvider implements FictionProvider {
         pageParserProvider.getParser(ChapterParser.class).request(httpClient)
                 .get("https://www.fimfiction.net/download_chapter.php?html&chapter=" + ((FimChapter) chapter).getId())
                 .target((FimChapter) chapter).send();
+    }
+
+    /**
+     * @return A map containing all shelves of this user as keys, and whether this story is part of those shelves as
+     * values.
+     */
+    public Map<FimShelf, Boolean> fetchStoryShelves(Story story) throws Exception {
+        String uri = "https://www.fimfiction.net/ajax/bookshelves/popup_list.php?story=" + ((FimStory) story).getId();
+
+        HttpResponse response = httpClient.execute(new HttpGet(uri));
+
+        JsonNode tree;
+        try (InputStream in = response.getEntity().getContent()) {
+            tree = objectMapper.readTree(in);
+        }
+
+        String contentHtml = tree.get("content").asText();
+
+        StoryShelfParser parser = pageParserProvider.getParser(StoryShelfParser.class);
+        Map<FimShelf, Boolean> result = parser.create();
+        parser.parse(Jsoup.parse(contentHtml, uri), result);
+        return result;
     }
 
     @Override

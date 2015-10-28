@@ -2,7 +2,9 @@ package at.yawk.fiction.impl.fimfiction;
 
 import at.yawk.fiction.impl.PageParserProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.testng.SkipException;
@@ -72,5 +74,24 @@ public class FimFictionProviderTestLogin {
         assertNotEquals(chapter.getRead(), oldRead);
         provider.toggleRead(chapter);
         assertEquals(chapter.getRead().booleanValue(), oldRead);
+    }
+
+    @Test
+    public void testFetchStoryShelves() throws Exception {
+        FimStory story = new FimStory();
+        story.setId(55373);
+        Map<FimShelf, Boolean> result = provider.fetchStoryShelves(story);
+        assertEquals(result, ImmutableMap.of(
+                createShelf(517612, "Tracking"), false,
+                createShelf(321007, "Read It Later"), false,
+                createShelf(124401, "Favourites"), true
+        ));
+    }
+
+    private static FimShelf createShelf(int id, String name) {
+        FimShelf shelf = new FimShelf();
+        shelf.setId(id);
+        shelf.setName(name);
+        return shelf;
     }
 }
