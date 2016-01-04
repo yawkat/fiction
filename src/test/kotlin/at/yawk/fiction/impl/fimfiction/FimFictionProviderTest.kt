@@ -4,7 +4,6 @@ import at.yawk.fiction.Chapter
 import at.yawk.fiction.Image
 import at.yawk.fiction.Story
 import at.yawk.fiction.impl.ParseTest
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.http.impl.client.CloseableHttpClient
 import org.apache.http.impl.client.HttpClientBuilder
 import org.testng.Assert.assertEquals
