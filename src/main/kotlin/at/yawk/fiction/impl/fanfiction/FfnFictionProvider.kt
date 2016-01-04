@@ -1,0 +1,53 @@
+package at.yawk.fiction.impl.fanfiction
+
+import at.yawk.fiction.*
+import lombok.RequiredArgsConstructor
+import org.apache.http.client.HttpClient
+import org.apache.http.client.methods.HttpGet
+
+/**
+ * @author yawkat
+ */
+@RequiredArgsConstructor
+class FfnFictionProvider(private val httpClient: HttpClient) : FictionProvider {
+    override val providedTypes = listOf<Class<out ProviderData>>(
+            FfnAuthorProviderData::class.java,
+            FfnChapterProviderData::class.java,
+            FfnStoryProviderData::class.java
+    )
+
+    override fun fetchStory(story: Story): Story {
+        val chapter: Chapter
+        if (story.chapters != null && !story.chapters.isEmpty()) {
+            chapter = story.chapters[0]
+        } else {
+            chapter = Chapter(providerData = FfnChapterProviderData(index = 0))
+        }
+        return fetchChapter(story, chapter).first
+    }
+
+    override fun fetchChapter(story: Story, chapter: Chapter): Pair<Story, Chapter> {
+        val id = (story.providerData as FfnStoryProviderData).id
+        val i = (chapter.providerData as FfnChapterProviderData).index!! + 1
+        return ChapterPageParser.request(httpClient)
+                .get("https://www.fanfiction.net/s/$id/$i")
+                .send()
+    }
+
+    fun fetchSubCategories(category: FfnCategory): List<FfnSubCategory> {
+        val subCategories = SubCategoryPageParser.fetch(httpClient, HttpGet("https://www.fanfiction.net/" + category.id))
+        return subCategories.map { it.copy(category = category) }
+    }
+
+    override fun search(query: SearchQuery): Pageable<Story> {
+        // fail early
+        val ffnSearchQuery = query as FfnSearchQuery
+        return object : Pageable<Story> {
+            override fun getPage(page: Int): Pageable.Page<Story> {
+                val uri = ffnSearchQuery.build(page)
+                val o = SearchPageParser.request(httpClient).get(uri).send()
+                return o.copy(last = o.pageCount!! <= page - 1)
+            }
+        }
+    }
+}
