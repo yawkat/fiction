@@ -19,6 +19,7 @@ class ProviderManager(val providers: List<FictionProvider>) {
     fun getProvider(story: Story) = getProvider(story.providerData)
     fun getProvider(author: Author) = getProvider(author.providerData)
     fun getProvider(chapter: Chapter) = getProvider(chapter.providerData)
+    fun getProvider(query: SearchQuery) = getProvider(query as ProviderData)
 
     fun getProvider(providerData: ProviderData) =
             providersByDataType[providerData.javaClass] ?: throw UnknownProviderException()

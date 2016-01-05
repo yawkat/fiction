@@ -14,10 +14,11 @@ import org.apache.http.client.methods.HttpGet
  * @author yawkat
  */
 class FfnFictionProvider(private val httpClient: HttpClient) : FictionProvider {
-    override val providedTypes = listOf<Class<out ProviderData>>(
+    override val providedTypes = listOf(
             FfnAuthorProviderData::class.java,
             FfnChapterProviderData::class.java,
-            FfnStoryProviderData::class.java
+            FfnStoryProviderData::class.java,
+            FfnSearchQuery::class.java
     )
 
     override fun fetchStory(story: Story): Story {

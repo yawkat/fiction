@@ -27,10 +27,11 @@ class FimFictionProvider(
         val httpClient: HttpClient,
         val objectMapper: ObjectMapper
 ) : FictionProvider {
-    override val providedTypes = listOf<Class<out ProviderData>>(
+    override val providedTypes = listOf(
             FimAuthorProviderData::class.java,
             FimChapterProviderData::class.java,
-            FimStoryProviderData::class.java
+            FimStoryProviderData::class.java,
+            FimSearchQuery::class.java
     )
 
     /**
