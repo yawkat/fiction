@@ -152,9 +152,9 @@ class FimFictionProvider(
         }
     }
 
-    private fun decorateHtmlRequest(request: PageParser.RequestBuilder) {
+    private fun decorateHtmlRequest(request: PageParser.RequestBuilder<*>) {
         request.validator(object : PageParser.DocumentValidator {
-            override fun validate(requestBuilder: PageParser.RequestBuilder, root: Element): Boolean {
+            override fun validate(requestBuilder: PageParser.RequestBuilder<*>, root: Element): Boolean {
                 val defaultAuthentication = defaultAuthentication
 
                 // confirm that we are logged in

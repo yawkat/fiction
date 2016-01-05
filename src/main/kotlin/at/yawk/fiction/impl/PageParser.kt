@@ -76,42 +76,39 @@ abstract class PageParser<T> {
 
     // REQUEST API
 
-    fun request(client: HttpClient): RequestBuilder {
-        return RequestBuilder(client)
+    fun request(client: HttpClient): RequestBuilder<T> {
+        return RequestBuilder(this, client)
     }
 
-    inner class RequestBuilder(
+    class RequestBuilder<T> internal constructor(
+            val parser: PageParser<T>,
             val client: HttpClient
     ) {
-        private object DefaultValidator : DocumentValidator {
-            override fun validate(requestBuilder: RequestBuilder, root: Element) = true
-        }
-
         private var request: HttpUriRequest? = null
         private var validator: DocumentValidator = DefaultValidator
 
-        fun request(request: HttpUriRequest): RequestBuilder {
+        fun request(request: HttpUriRequest): RequestBuilder<T> {
             this.request = request
             return this
         }
 
-        fun get(uri: URI): RequestBuilder {
+        fun get(uri: URI): RequestBuilder<T> {
             return request(HttpGet(uri))
         }
 
-        fun get(uri: String): RequestBuilder {
+        fun get(uri: String): RequestBuilder<T> {
             return request(HttpGet(uri))
         }
 
-        fun cookies(key: String, value: String): RequestBuilder {
+        fun cookies(key: String, value: String): RequestBuilder<T> {
             return cookies(listOf(key), listOf(value))
         }
 
-        fun cookies(key1: String, value1: String, key2: String, value2: String): RequestBuilder {
+        fun cookies(key1: String, value1: String, key2: String, value2: String): RequestBuilder<T> {
             return cookies(Arrays.asList(key1, key2), Arrays.asList(value1, value2))
         }
 
-        fun cookies(keys: List<String>, values: List<String>): RequestBuilder {
+        fun cookies(keys: List<String>, values: List<String>): RequestBuilder<T> {
             assert(keys.size == values.size)
             val cookieString = StringBuilder()
             for (i in keys.indices) {
@@ -125,12 +122,12 @@ abstract class PageParser<T> {
             return header("Cookie", cookieString.toString())
         }
 
-        fun header(key: String, value: String): RequestBuilder {
+        fun header(key: String, value: String): RequestBuilder<T> {
             request!!.addHeader(key, value)
             return this
         }
 
-        fun validator(validator: DocumentValidator): RequestBuilder {
+        fun validator(validator: DocumentValidator): RequestBuilder<T> {
             this.validator = validator
             return this
         }
@@ -150,7 +147,7 @@ abstract class PageParser<T> {
             do {
                 root = requestRootOnce()
             } while (!validator.validate(this, root))
-            return parse(root)
+            return parser.parse(root)
         }
     }
 
@@ -162,6 +159,10 @@ abstract class PageParser<T> {
          *
          * @throws Exception If the request should be aborted.
          */
-        fun validate(requestBuilder: PageParser.RequestBuilder, root: Element): Boolean
+        fun validate(requestBuilder: RequestBuilder<*>, root: Element): Boolean
+    }
+
+    private object DefaultValidator : DocumentValidator {
+        override fun validate(requestBuilder: RequestBuilder<*>, root: Element) = true
     }
 }
