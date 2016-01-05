@@ -13,7 +13,7 @@ import java.net.URLEncoder
 /**
  * @author yawkat
  */
-class FimSearchQuery(
+data class FimSearchQuery(
         val includedTags: Set<FimTag>? = null,
         val excludedTags: Set<FimTag>? = null,
         val order: FimOrder? = null,
