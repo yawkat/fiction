@@ -102,7 +102,7 @@ internal object StoryParser : PageParser<Story>() {
 
             val chapterLink = chapterContainer.select(".chapter_link").first()
 
-            val id = parseIntLenient(extractGroup(
+            val chapterId = parseIntLenient(extractGroup(
                     chapterContainer.select(".download_container a").first().attr("href"), ".*chapter=(\\d+)"))
             val index = parseIntLenient(extractGroup(
                     chapterLink.attr("href"), ".*/story/\\d+/(\\d+)(:?/.*)?")) - 1
@@ -116,7 +116,7 @@ internal object StoryParser : PageParser<Story>() {
                     name = name,
                     read = read,
                     providerData = FimChapterProviderData(
-                            id = id,
+                            id = chapterId,
                             index = index,
                             wordCount = wordCount
                     )

@@ -6,14 +6,9 @@
 
 package at.yawk.fiction.impl.fanfiction
 
-import lombok.Getter
-import lombok.RequiredArgsConstructor
-
 /**
  * @author yawkat
  */
-@Getter
-@RequiredArgsConstructor
 enum class FfnCategory(
         val displayName: String,
         val id: String

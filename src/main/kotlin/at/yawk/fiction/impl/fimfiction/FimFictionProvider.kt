@@ -10,7 +10,6 @@ import at.yawk.fiction.*
 import at.yawk.fiction.impl.PageParser
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import lombok.RequiredArgsConstructor
 import org.apache.http.client.HttpClient
 import org.apache.http.client.entity.UrlEncodedFormEntity
 import org.apache.http.client.methods.HttpGet
@@ -24,7 +23,6 @@ import java.util.*
 /**
  * @author yawkat
  */
-@RequiredArgsConstructor
 class FimFictionProvider(
         val httpClient: HttpClient,
         val objectMapper: ObjectMapper
@@ -75,7 +73,6 @@ class FimFictionProvider(
     /**
      * Get a list of all shelves of this user. Return value is undefined if the user isn't logged in.
      */
-    @Throws(Exception::class)
     fun fetchShelves(): List<FimShelf> {
         val request = ShelvesParser.request(httpClient).get("https://www.fimfiction.net/")
         decorateHtmlRequest(request)
@@ -115,7 +112,6 @@ class FimFictionProvider(
      * @return A map containing all shelves of this user as keys, and whether this story is part of those shelves as
      * * values.
      */
-    @Throws(Exception::class)
     fun fetchStoryShelves(story: Story): Map<FimShelf, Boolean> {
         val uri = "https://www.fimfiction.net/ajax/bookshelves/popup_list.php?story=" + (story.providerData as FimStoryProviderData).id!!
 
@@ -133,7 +129,6 @@ class FimFictionProvider(
 
      * @param add whether this story should be in the shelf after this call.
      */
-    @Throws(Exception::class)
     fun setStoryShelf(story: Story, shelf: FimShelf, add: Boolean) {
         val request = HttpPost("https://www.fimfiction.net/ajax/bookshelf_items/post.php")
         request.entity = UrlEncodedFormEntity(Arrays.asList(

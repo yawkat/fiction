@@ -7,14 +7,12 @@
 package at.yawk.fiction.impl.fanfiction
 
 import at.yawk.fiction.*
-import lombok.RequiredArgsConstructor
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
 
 /**
  * @author yawkat
  */
-@RequiredArgsConstructor
 class FfnFictionProvider(private val httpClient: HttpClient) : FictionProvider {
     override val providedTypes = listOf<Class<out ProviderData>>(
             FfnAuthorProviderData::class.java,

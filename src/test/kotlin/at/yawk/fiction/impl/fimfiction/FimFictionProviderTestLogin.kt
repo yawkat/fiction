@@ -85,7 +85,6 @@ class FimFictionProviderTestLogin {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testSetStoryShelf() {
         val shelf = FimShelf(321007, "Read It Later")
         val story = Story(providerData = FimStoryProviderData(

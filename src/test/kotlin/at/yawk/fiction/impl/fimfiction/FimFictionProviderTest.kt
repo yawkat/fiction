@@ -27,14 +27,12 @@ class FimFictionProviderTest {
     private lateinit var client: CloseableHttpClient
 
     @BeforeMethod
-    @Throws(Exception::class)
     fun setUp() {
         client = HttpClientBuilder.create().build()
         provider = FimFictionProvider(client, ParseTest.makeObjectMapper())
     }
 
     @AfterMethod
-    @Throws(Exception::class)
     fun tearDown() {
         client.close()
     }
@@ -71,7 +69,6 @@ class FimFictionProviderTest {
     }
 
     @Test
-    @Throws(Exception::class)
     fun testSearch() {
         val query = FimSearchQuery(
                 excludedTags = emptySet(),

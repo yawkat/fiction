@@ -8,7 +8,6 @@ package at.yawk.fiction.impl
 
 import com.google.common.base.Charsets
 import com.google.common.base.Splitter
-import lombok.SneakyThrows
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpUriRequest
@@ -16,8 +15,6 @@ import org.intellij.lang.annotations.RegExp
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import java.io.IOException
-import java.io.UnsupportedEncodingException
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.Charset
@@ -114,7 +111,6 @@ abstract class PageParser<T> {
             return cookies(Arrays.asList(key1, key2), Arrays.asList(value1, value2))
         }
 
-        @SneakyThrows(UnsupportedEncodingException::class)
         fun cookies(keys: List<String>, values: List<String>): RequestBuilder {
             assert(keys.size == values.size)
             val cookieString = StringBuilder()
@@ -139,7 +135,6 @@ abstract class PageParser<T> {
             return this
         }
 
-        @Throws(IOException::class)
         private fun requestRootOnce(): Document {
             val response = client.execute(request)
             val contentEncoding = response.entity.contentEncoding
@@ -150,7 +145,6 @@ abstract class PageParser<T> {
             return response.entity.content.use { Jsoup.parse(it, charset.name(), request!!.uri.toString()) }
         }
 
-        @Throws(Exception::class)
         fun send(): T {
             var root: Document
             do {
