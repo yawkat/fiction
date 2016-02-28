@@ -63,17 +63,18 @@ public class FimFictionProviderTestLogin {
     }
 
     @Test
-    public void testToggleRead() throws Exception {
+    public void testSetRead() throws Exception {
         FimStory story = new FimStory();
         story.setId(55373);
         provider.fetchStory(story);
 
         FimChapter chapter = (FimChapter) story.getChapters().get(109);
-        boolean oldRead = chapter.getRead();
-        provider.toggleRead(chapter);
-        assertNotEquals(chapter.getRead(), oldRead);
-        provider.toggleRead(chapter);
-        assertEquals(chapter.getRead().booleanValue(), oldRead);
+        provider.setRead(chapter, true);
+        provider.fetchStory(story);
+        assertEquals(story.getChapters().get(109).getRead().booleanValue(), true);
+        provider.setRead(chapter, false);
+        provider.fetchStory(story);
+        assertEquals(story.getChapters().get(109).getRead().booleanValue(), false);
     }
 
     @Test
@@ -83,7 +84,7 @@ public class FimFictionProviderTestLogin {
         Map<FimShelf, Boolean> result = provider.fetchStoryShelves(story);
         assertEquals(result, ImmutableMap.of(
                 createShelf(517612, "Tracking"), false,
-                createShelf(321007, "Read It Later"), false,
+                createShelf(321007, "Read It Later"), true,
                 createShelf(124401, "Favourites"), true
         ));
     }

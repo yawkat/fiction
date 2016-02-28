@@ -7,18 +7,28 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.annotation.Nullable;
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.Value;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
@@ -39,6 +49,12 @@ public class FimFictionProvider implements FictionProvider {
     private FimAuthentication defaultAuthentication = null;
 
     /**
+     * Secret signing key set during login.
+     */
+    @Nullable
+    private SecretKey signingKey = null;
+
+    /**
      * Login once, without saving credentials. HttpClient must save cookies for this to work!
      */
     public void loginOnce(String username, String password)
@@ -51,7 +67,7 @@ public class FimFictionProvider implements FictionProvider {
      */
     public void loginOnce(FimAuthentication authentication)
             throws IOException, FimAuthenticationException {
-        HttpPost request = new HttpPost("https://www.fimfiction.net/ajax/login.php");
+        HttpPost request = new HttpPost("https://www.fimfiction.net/ajax/login");
         request.setEntity(new UrlEncodedFormEntity(Arrays.asList(
                 new BasicNameValuePair("username", authentication.getUsername()),
                 new BasicNameValuePair("password", authentication.getPassword()),
@@ -65,6 +81,8 @@ public class FimFictionProvider implements FictionProvider {
         if (responseNode.has("error")) {
             throw new FimAuthenticationException(responseNode.get("error").toString());
         }
+        signingKey = new SecretKeySpec(DatatypeConverter.parseBase64Binary(
+                responseNode.get("signing_key").asText()), "HmacSHA256");
     }
 
     public List<FimTag> fetchTags() throws Exception {
@@ -86,15 +104,29 @@ public class FimFictionProvider implements FictionProvider {
         return request.send();
     }
 
-    /**
-     * Toggle this chapters read status and set {@link Chapter#read} to the new value. <i>This does not make use of the
-     * old {@link Chapter#read} value, if it is out of date this action may yield unwanted results!</i>
-     */
-    public void toggleRead(Chapter chapter) throws Exception {
-        HttpPost request = new HttpPost("https://www.fimfiction.net/ajax/toggle_read.php");
-        request.setEntity(new UrlEncodedFormEntity(Collections.singletonList(
-                new BasicNameValuePair("chapter", String.valueOf(((FimChapter) chapter).getId()))
-        )));
+    public void setRead(Chapter chapter, boolean read) throws Exception {
+        String path = "/ajax/chapters/" + ((FimChapter) chapter).getId() + "/read";
+        String url = "https://www.fimfiction.net" + path;
+        HttpUriRequest request;
+        if (read) {
+            request = new HttpPost(url);
+        } else {
+            // HttpDelete does not support entities - so we do this hack
+            request = new HttpEntityEnclosingRequestBase() {
+                { setURI(URI.create(url)); }
+
+                @Override
+                public String getMethod() {
+                    return "DELETE";
+                }
+            };
+        }
+        Signature signature = sign(path, "");
+        String data = "&signature=" + URLEncoder.encode(signature.getHmac(), "UTF-8") +
+                      "&signature_nonce=" + URLEncoder.encode(signature.getNonce(), "UTF-8") +
+                      "&signature_timestamp=" + signature.getTime();
+        ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(data,
+                                                                              ContentType.APPLICATION_FORM_URLENCODED));
 
         HttpResponse response = httpClient.execute(request);
         JsonNode responseNode = objectMapper.readTree(EntityUtils.toByteArray(response.getEntity()));
@@ -122,7 +154,7 @@ public class FimFictionProvider implements FictionProvider {
      * values.
      */
     public Map<FimShelf, Boolean> fetchStoryShelves(Story story) throws Exception {
-        String uri = "https://www.fimfiction.net/ajax/bookshelves/popup_list.php?story=" + ((FimStory) story).getId();
+        String uri = "https://www.fimfiction.net/ajax/bookshelves/add-story-popup?story=" + ((FimStory) story).getId();
 
         HttpResponse response = httpClient.execute(new HttpGet(uri));
 
@@ -145,12 +177,16 @@ public class FimFictionProvider implements FictionProvider {
      * @param add whether this story should be in the shelf after this call.
      */
     public void setStoryShelf(Story story, FimShelf shelf, boolean add) throws Exception {
-        HttpPost request = new HttpPost("https://www.fimfiction.net/ajax/bookshelf_items/post.php");
-        request.setEntity(new UrlEncodedFormEntity(Arrays.asList(
-                new BasicNameValuePair("bookshelf", String.valueOf(shelf.getId())),
-                new BasicNameValuePair("story", String.valueOf(((FimStory) story).getId())),
-                new BasicNameValuePair("task", add ? "add" : "remove")
-        )));
+        HttpUriRequest request;
+        if (add) {
+            request = new HttpPost("https://www.fimfiction.net/ajax/bookshelves/" + shelf.getId() + "/items");
+            ((HttpPost) request).setEntity(new UrlEncodedFormEntity(Collections.singletonList(
+                    new BasicNameValuePair("story", String.valueOf(((FimStory) story).getId()))
+            )));
+        } else {
+            request = new HttpDelete("https://www.fimfiction.net/ajax/bookshelves/" + shelf.getId() + "/items/" +
+                                     ((FimStory) story).getId());
+        }
         // we just assume this works
         //noinspection resource
         httpClient.execute(request)
@@ -190,5 +226,26 @@ public class FimFictionProvider implements FictionProvider {
             }
             return true;
         });
+    }
+
+    @SneakyThrows
+    private Signature sign(String url, String body) {
+        byte[] nonceBytes = new byte[32];
+        ThreadLocalRandom.current().nextBytes(nonceBytes); // i don't really care about security here
+        String nonce = DatatypeConverter.printHexBinary(nonceBytes);
+        long time = System.currentTimeMillis() / 1000;
+
+        String payload = nonce + '|' + time + '|' + DatatypeConverter.printBase64Binary(url.getBytes()) + '|' + body;
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(signingKey);
+        byte[] hmac = mac.doFinal(payload.getBytes());
+        return new Signature(DatatypeConverter.printBase64Binary(hmac), nonce, time);
+    }
+
+    @Value
+    private static class Signature {
+        String hmac;
+        String nonce;
+        long time;
     }
 }
