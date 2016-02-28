@@ -20,7 +20,7 @@ enum class FfnRating(
 
     companion object {
         fun forName(name: String): FfnRating? {
-            return values.firstOrNull { it.displayName == name }
+            return values().firstOrNull { it.displayName == name }
         }
     }
 }

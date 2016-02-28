@@ -9,13 +9,13 @@ package at.yawk.fiction
 /**
  * @author yawkat
  */
-interface Pageable<T> {
+interface Pageable<out T> {
     /**
      * Get the page of the given index. Indexes start at 0.
      */
     fun getPage(page: Int): Page<T>
 
-    data class Page<T>(
+    data class Page<out T>(
             val entries: List<T>,
             /**
              * The expected total page count or `null` if unknown.

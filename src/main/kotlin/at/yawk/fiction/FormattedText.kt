@@ -6,6 +6,7 @@
 
 package at.yawk.fiction
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 
@@ -19,5 +20,5 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 )
 interface FormattedText
 
-data class HtmlText(val html: String) : FormattedText
-data class RawText(val text: String) : FormattedText
+data class HtmlText(@JsonProperty("html") val html: String) : FormattedText
+data class RawText(@JsonProperty("text") val text: String) : FormattedText

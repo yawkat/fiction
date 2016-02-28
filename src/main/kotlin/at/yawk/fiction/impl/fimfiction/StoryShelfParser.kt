@@ -14,14 +14,14 @@ import org.jsoup.nodes.Element
  */
 internal object StoryShelfParser : PageParser<Map<FimShelf, Boolean>>() {
     override fun parse(root: Element): Map<FimShelf, Boolean> {
-        return root.select("#bookshelves-popup-list li > a").toMap(
-                {
+        return root.select("#bookshelves-popup-list li > a").map {
+            Pair(
                     FimShelf(
                             id = Integer.parseInt(it.attr("data-bookshelf")),
                             name = it.select(".name").text()
-                    )
-                },
-                { it.hasClass("selected") }
-        )
+                    ),
+                    it.hasClass("selected")
+            )
+        }.toMap()
     }
 }

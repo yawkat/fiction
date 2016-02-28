@@ -10,12 +10,12 @@ package at.yawk.fiction.impl.fanfiction
  * @author yawkat
  */
 data class FfnSubCategory(
-        val category: FfnCategory? = null,
+        val category: FfnCategory,
         val crossover: Boolean? = null,
 
-        val name: String? = null,
+        val name: String,
         val id: Int? = null,
-        val estimatedStoryCount: Int? = null,
+        val estimatedStoryCount: Int,
         val characters: Collection<FfnCharacter>? = null,
         val genres: Collection<FfnGenre>? = null,
         val languages: Collection<FfnLanguage>? = null,

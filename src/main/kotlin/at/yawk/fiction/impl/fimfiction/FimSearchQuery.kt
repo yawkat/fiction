@@ -6,13 +6,18 @@
 
 package at.yawk.fiction.impl.fimfiction
 
+import at.yawk.fiction.DefaultParameterDeserializer
 import at.yawk.fiction.SearchQuery
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import java.net.URI
 import java.net.URLEncoder
+
+private class Deserializer : DefaultParameterDeserializer<FimSearchQuery>(::FimSearchQuery)
 
 /**
  * @author yawkat
  */
+@JsonDeserialize(using = Deserializer::class)
 data class FimSearchQuery(
         val includedTags: Set<FimTag>? = null,
         val excludedTags: Set<FimTag>? = null,

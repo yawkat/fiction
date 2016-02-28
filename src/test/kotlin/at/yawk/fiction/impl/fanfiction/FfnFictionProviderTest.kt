@@ -36,7 +36,8 @@ class FfnFictionProviderTest {
         val query = FfnSearchQuery(
                 category = FfnSubCategory(
                         category = FfnCategory.GAMES,
-                        name = "Elder Scroll series"
+                        name = "Elder Scroll series",
+                        estimatedStoryCount = 0
                 )
         )
         val search = provider.search(query)

@@ -6,14 +6,19 @@
 
 package at.yawk.fiction.impl.fanfiction
 
+import at.yawk.fiction.DefaultParameterDeserializer
 import at.yawk.fiction.SearchQuery
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import java.io.UnsupportedEncodingException
 import java.net.URI
 import java.net.URLEncoder
 
+private class Deserializer : DefaultParameterDeserializer<FfnSearchQuery>(::FfnSearchQuery)
+
 /**
  * @author yawkat
  */
+@JsonDeserialize(using = Deserializer::class)
 data class FfnSearchQuery(
         val category: FfnSubCategory? = null,
 
@@ -41,7 +46,7 @@ data class FfnSearchQuery(
         val builder = StringBuilder("https://www.fanfiction.net/")
         builder.append(category.id).append('/')
         try {
-            builder.append(URLEncoder.encode(category.name!!.replace(' ', '-'), "UTF-8")).append("/?")
+            builder.append(URLEncoder.encode(category.name.replace(' ', '-'), "UTF-8")).append("/?")
         } catch (e: UnsupportedEncodingException) {
             throw RuntimeException(e)
         }

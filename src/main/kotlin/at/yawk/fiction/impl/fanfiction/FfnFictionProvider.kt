@@ -40,8 +40,7 @@ class FfnFictionProvider(private val httpClient: HttpClient) : FictionProvider {
     }
 
     fun fetchSubCategories(category: FfnCategory): List<FfnSubCategory> {
-        val subCategories = SubCategoryPageParser.fetch(httpClient, HttpGet("https://www.fanfiction.net/" + category.id))
-        return subCategories.map { it.copy(category = category) }
+        return SubCategoryPageParser(category).fetch(httpClient, HttpGet("https://www.fanfiction.net/" + category.id))
     }
 
     override fun search(query: SearchQuery): Pageable<Story> {

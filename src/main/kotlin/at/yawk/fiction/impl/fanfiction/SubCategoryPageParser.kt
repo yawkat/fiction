@@ -12,10 +12,11 @@ import org.jsoup.nodes.Element
 /**
  * @author yawkat
  */
-internal object SubCategoryPageParser : PageParser<List<FfnSubCategory>>() {
+internal class SubCategoryPageParser(val category: FfnCategory) : PageParser<List<FfnSubCategory>>() {
     override fun parse(root: Element): List<FfnSubCategory> {
         return root.select("#list_output tr td > div").map {
             FfnSubCategory(
+                    category = category,
                     name = it.select("a").text(),
                     estimatedStoryCount = parseUnitedDouble(extractGroup(
                             it.select("span").text(), "\\((\\d+(\\.\\d+)?[KM]?)\\)") ?: "")
