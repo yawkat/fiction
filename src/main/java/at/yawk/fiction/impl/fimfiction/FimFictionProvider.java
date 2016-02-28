@@ -3,6 +3,8 @@ package at.yawk.fiction.impl.fimfiction;
 import at.yawk.fiction.*;
 import at.yawk.fiction.impl.PageParser;
 import at.yawk.fiction.impl.PageParserProvider;
+import com.fasterxml.jackson.core.Base64Variant;
+import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -18,11 +20,12 @@ import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.Value;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.codec.binary.Hex;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -81,8 +84,7 @@ public class FimFictionProvider implements FictionProvider {
         if (responseNode.has("error")) {
             throw new FimAuthenticationException(responseNode.get("error").toString());
         }
-        signingKey = new SecretKeySpec(DatatypeConverter.parseBase64Binary(
-                responseNode.get("signing_key").asText()), "HmacSHA256");
+        signingKey = new SecretKeySpec(parseBase64(responseNode.get("signing_key").asText()), "HmacSHA256");
     }
 
     public List<FimTag> fetchTags() throws Exception {
@@ -232,14 +234,26 @@ public class FimFictionProvider implements FictionProvider {
     private Signature sign(String url, String body) {
         byte[] nonceBytes = new byte[32];
         ThreadLocalRandom.current().nextBytes(nonceBytes); // i don't really care about security here
-        String nonce = DatatypeConverter.printHexBinary(nonceBytes);
+        String nonce = printHex(nonceBytes);
         long time = System.currentTimeMillis() / 1000;
 
-        String payload = nonce + '|' + time + '|' + DatatypeConverter.printBase64Binary(url.getBytes()) + '|' + body;
+        String payload = nonce + '|' + time + '|' + printBase64(url.getBytes()) + '|' + body;
         Mac mac = Mac.getInstance("HmacSHA256");
         mac.init(signingKey);
         byte[] hmac = mac.doFinal(payload.getBytes());
-        return new Signature(DatatypeConverter.printBase64Binary(hmac), nonce, time);
+        return new Signature(printBase64(hmac), nonce, time);
+    }
+
+    private static String printHex(byte[] hex) {
+        return new String(Hex.encodeHex(hex));
+    }
+
+    private String printBase64(byte[] bytes) {
+        return Base64Variants.MIME.encode(bytes);
+    }
+
+    private byte[] parseBase64(String string) {
+        return Base64Variants.MIME.decode(string);
     }
 
     @Value
