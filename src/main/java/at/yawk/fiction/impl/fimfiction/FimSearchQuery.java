@@ -35,7 +35,7 @@ public class FimSearchQuery extends SearchQuery {
         if (shelf == null) {
             uriBuilder.append("stories?");
         } else {
-            uriBuilder.append("bookshelf/").append(shelf.getId()).append('?');
+            uriBuilder.append("bookshelf/").append(shelf.getId()).append("/?");
         }
 
         if (order != null) {

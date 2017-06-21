@@ -25,21 +25,20 @@ class StoryParser extends PageParser<FimStory> {
         // only applicable outside a search when the root is a html element
         Element storyContainer = root.select(".story_container").first();
 
-        Elements contentBox = storyContainer.select(".story_content_box");
-        target.setId(parseIntLenient(contentBox.attr("id")));
-        Element storyName = contentBox.select(".story_name").first();
+        target.setId(Integer.parseInt(root.select(".story_container").attr("data-story")));
+        Element storyName = root.select(".story_name").first();
         target.setTitle(storyName.text());
         target.setUri(URI.create(storyName.absUrl("href")));
 
         FimAuthor author = new FimAuthor();
-        Elements authorLink = contentBox.select(".author a");
+        Element authorLink = root.select(".author a").first();
         String authorHref = authorLink.attr("href");
-        author.setId(authorHref.substring(authorHref.lastIndexOf('/') + 1));
+        author.setId(extractGroup(authorHref, "/user/(\\d)+/.*"));
         author.setName(authorLink.text());
         target.setAuthor(author);
 
         Element descriptionElement = storyContainer.select(".description").first();
-        Element storyImage = descriptionElement.select(".story_image img").first();
+        Element storyImage = descriptionElement.select(".story_container__story_image img").first();
         if (storyImage != null) {
             Image image = new Image();
             if (storyImage.hasAttr("data-src")) {
@@ -51,68 +50,49 @@ class StoryParser extends PageParser<FimStory> {
             target.setImage(image);
         }
 
-        Element separator = descriptionElement.select(">hr").first();
-        if (separator != null) {
-            StringBuilder descriptionHtml = new StringBuilder();
-            Node e = separator;
-            while ((e = e.nextSibling()) != null) {
-                descriptionHtml.append(e.outerHtml());
-            }
-
+        Element descriptionText = descriptionElement.select("> .description-text").first();
+        if (descriptionText != null) {
             HtmlText html = new HtmlText();
-            html.setHtml(descriptionHtml.toString());
+            html.setHtml(descriptionText.html());
             target.setDescription(html);
         }
 
         List<FimTag> tags = new ArrayList<>();
 
-        for (Element categoryElement : descriptionElement.select("> .story_category")) {
+        for (Element tagElement : storyContainer.select(".story-tags a")) {
             FimTag tag = new FimTag();
-            tag.setId(extractGroup(categoryElement.attr("href"), ".*tags\\[\\]=(.+)"));
-            tag.setName(categoryElement.text());
+            tag.setId(tagElement.attr("data-tag"));
+            tag.setName(tagElement.text());
             tag.setIcon(null);
-            tags.add(tag);
-        }
-
-        for (Element characterIcon : root.select(".extra_story_data .inner_data").first().select("> .character_icon")) {
-            FimTag tag = new FimTag();
-            // we can't find out id here :(
-            tag.setName(characterIcon.attr("title"));
-            tag.setIcon(new URL(characterIcon.select("img").first().absUrl("src")));
             tags.add(tag);
         }
 
         target.setTags(tags);
 
-        Element statusElement = storyContainer.select(".chapters .bottom > span").first();
-        switch (statusElement.attr("title")) {
-        case "Complete":
-            target.setStatus(FimStatus.COMPLETED);
-            break;
-        case "Incomplete":
+        Elements footer = storyContainer.select(".chapters-footer");
+        if (footer.select(".completed-status-incomplete") != null) {
             target.setStatus(FimStatus.INCOMPLETE);
-            break;
-        case "On Hiatus":
+        } else if (footer.select(".completed-status-complete") != null) {
+            target.setStatus(FimStatus.COMPLETED);
+        } else if (footer.select(".completed-status-hiatus") != null) {
             target.setStatus(FimStatus.ON_HIATUS);
-            break;
-        case "Cancelled":
+        } else if (footer.select(".completed-status-cancelled") != null) {
             target.setStatus(FimStatus.CANCELLED);
-            break;
         }
 
         List<FimChapter> chapters = new ArrayList<>();
-        for (Element chapterContainer : storyContainer.select(".chapters .chapter_container")) {
+        for (Element chapterContainer : storyContainer.select(".chapters > li > div")) {
             if (chapterContainer.hasClass("chapter_expander")) { continue; }
 
-            Element chapterLink = chapterContainer.select(".chapter_link").first();
+            Element chapterLink = chapterContainer.select(".chapter-title").first();
 
             FimChapter chapter = new FimChapter();
             chapter.setId(parseIntLenient(extractGroup(
-                    chapterContainer.select(".download_container a").first().attr("href"), ".*chapter=(\\d+)")));
+                    chapterContainer.select(".word_count .drop-down a").first().attr("href"), "/chapters/download/(\\d+)/txt")));
             chapter.setIndex(parseIntLenient(extractGroup(
-                    chapterLink.attr("href"), ".*/story/\\d+/(\\d+)(:?/.*)?")) - 1);
+                    chapterLink.attr("href"), ".*/story/\\d+/[^/]*/(\\d+)(:?/.*)?")) - 1);
             chapter.setName(chapterLink.text());
-            chapter.setWordCount(parseIntLenient(chapterContainer.select(".word_count").first().ownText()));
+            chapter.setWordCount(parseIntLenient(chapterContainer.select(".word_count .word-count-number").first().text()));
 
             Element chapterReadIcon = chapterContainer.select(".chapter-read-icon").first();
             if (chapterReadIcon != null) {

@@ -220,7 +220,7 @@ public class FimFictionProvider implements FictionProvider {
 
             // confirm that we are logged in
             if (defaultAuthentication != null &&
-                root.getElementById("private-message-drop-down") == null) {
+                root.select(".drop-down-private-messages").isEmpty()) {
 
                 loginOnce(defaultAuthentication);
                 // resend request - we should have session cookies now
