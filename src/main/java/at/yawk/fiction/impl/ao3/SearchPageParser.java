@@ -41,8 +41,10 @@ class SearchPageParser extends PageParser<Pageable.Page<Ao3Story>> {
             story.setUri(URI.create("https://archiveofourown.org/works/" + story.getId()));
             Elements titleAndAuthor = element.select("> div > h4 > a");
             story.setTitle(titleAndAuthor.first().text());
-            story.setAuthor(new Ao3Author());
-            story.getAuthor().setName(titleAndAuthor.get(1).text());
+            if (titleAndAuthor.size() > 1) {
+                story.setAuthor(new Ao3Author());
+                story.getAuthor().setName(titleAndAuthor.get(1).text());
+            }
             story.setUpdateTime(LocalDate.parse(element.select(".datetime").first().text(), DATE_PATTERN)
                                         .toDateTimeAtStartOfDay()
                                         .toInstant());
